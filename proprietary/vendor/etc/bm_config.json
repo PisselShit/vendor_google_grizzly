@@ -1,0 +1,73 @@
+{
+    "MitigationMethod":[
+        {
+            "Name":"AUDIO_MITIGATION",
+            "Module":"AUDIO",
+            "Trigger":["OILO1", "OILO2", "UVLO1", "UVLO2"],
+            "State":["LIGHT", "MEDIUM", "HEAVY", "DISABLED"],
+            "Condition":"BASIC"
+        },
+        {
+            "Name":"UNDEFINED",
+            "Module":"UNDEFINED",
+            "Trigger":["OILO1", "OILO2", "UVLO1", "UVLO2", "SMPL"],
+            "State":["START", "LIGHT", "MEDIUM", "HEAVY", "DISABLED"],
+            "Condition":"BASIC"
+        }
+    ],
+    "MitigationConfig": {
+        "QuickSaveStats": 1,
+        "TriggerDeglitchMS": 1000
+    },
+    "AdaptiveConfig": {
+        "SeverityWeights": {
+            "MEDIUM": 1,
+            "NONE": 0
+        },
+        "Sources": [
+            {
+                "Name": "battery_level",
+                "RangeMap": [
+                    {"Range": [0, 19], "Output":"MEDIUM"},
+                    {"Range": [20, 100], "Output":"NONE"}
+                ]
+            }
+        ],
+        "SeverityToOutputMap": {
+            "MEDIUM": [
+                {
+                    "Name": "batoilo2_lvl",
+                    "Type": "triggered_lvl",
+                    "Value": "7000"
+                },
+                {
+                    "Name": "batoilo2_usb_lvl",
+                    "Type": "triggered_lvl",
+                    "Value": "7000"
+                },
+                {
+                    "Name": "batoilo2_wlc_lvl",
+                    "Type": "triggered_lvl",
+                    "Value": "7000"
+                }
+            ],
+            "NONE": [
+                {
+                    "Name": "batoilo2_lvl",
+                    "Type": "triggered_lvl",
+                    "Value": "10000"
+                },
+                {
+                    "Name": "batoilo2_usb_lvl",
+                    "Type": "triggered_lvl",
+                    "Value": "10000"
+                },
+                {
+                    "Name": "batoilo2_wlc_lvl",
+                    "Type": "triggered_lvl",
+                    "Value": "10000"
+                }
+            ]
+        }
+    }
+}

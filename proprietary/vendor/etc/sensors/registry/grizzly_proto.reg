@@ -1,0 +1,96 @@
+#
+# Grizzly sensor device configuration registry script for the Proto stage.
+#
+# Source of truth: go/pixel-sensor-list
+#
+
+#
+# CDT Filter <CDT>:<mask>
+# CDT format: <0xPPPPSJIV> (P:Product, S:Stage, J:Major, I:Minor, V:Variant)
+# go/pixel-cdt-mbu
+#
+
+?+0x52000:0xFFFFF000  # Proto
+
+#
+# Record reg_script.
+#
+
++/
+reg_script=grizzly_proto.reg
+
+#
+# Sensors
+#
+
+# Color Lights Driver
++/dev/b1010/0
+  # Golden calibration values.
+  xyz_to_pwm_0=1 0.360738 -0.100829 -0.041776 -0.057515 0.133307 -0.010297 0.002129 -0.005578 0.067012
+  xyz_to_pwm_1=2 0.136123 -0.036687 -0.016183 -0.026639 0.061757 -0.004546 0.001083 -0.002803 0.032206
+
+# ALSP
++/dev/tmd3743/0/als
+  x_scale=0.9075
+  lux_scale=0.9253
+  z_scale=1.0226
+  vsync_delay_us=307 307
+  vsync_delay_2_us=911
+  # DBV table and dependent parameters for each frequency in pwm_hz table.
+  #   Each parameter is appended with an index, equal to the index of the
+  #   PWM frequency it corresponds to, in the pwm_hz table.
+  itime_table_brightness_0=1500 2918 16384
+  itime_table_0=1600000 1200000 300000
+  max_gain_table_0=7 7 7
+  itime_table_brightness_1=1500 2918 16384
+  itime_table_1=1600000 1200000 300000
+  max_gain_table_1=7 7 7
+
+  prox_delay_1hz_0=21000 21000 21000
+  prox_delay_10hz_0=21000 21000 21000
+  prox_delay_30hz_0=21000 21000 21000
+  prox_delay_60hz_0=21000 21000 21000
+  prox_delay_120hz_0=21000 21000 21000
+  prox_delay_1hz_1=21000 21000 21000
+  prox_delay_10hz_1=21000 21000 21000
+  prox_delay_30hz_1=21000 21000 21000
+  prox_delay_60hz_1=21000 21000 21000
+  prox_delay_120hz_1=21000 21000 21000
+
+  # Golden value for fac-cal leakages.
+  crgbw_leakage_at_dbv=240 106.0 66.0 40.0 12.0 118.0 2918 240 68.0 46.0 25.0 10.0 76.0 12908 480 326.0 199.0 116.0  51.0 339.0 2918 480 79.0 54.0 29.0 12.0 90.0 12908
+
++/dev/tmd3743/0/prox
+  temp_coeff=0
+  pdata_scale=3.896
+  pdata_baseline=7228
+
+# MAG 0 (MMC5616WA)
++/dev/mmc5616/0/mag
+  name=MMC5616 Magnetometer 0
+
+# MAG 1 (MMC5616WA)
++/dev/mmc5616/1
+  bus_name=i3c4
+  bus_freq_hz=400000
+  i3c_freq_hz=6250000
+  bus_addr=0x30
+  i3c_addr=0x14
+  priority=1
+  orientation_transform=1 2 3
++/dev/mmc5616/1/mag
+  name=MMC5616 Magnetometer 1
+  fac_cal_transform=0.9900 0.0352 -0.0769 0.0519 0.9682 -0.0738 -0.0050 -0.0963 1.1953 0 0 0
+
+# BARO 1 (SPL07003).
++/dev/spxyz00n/1
+  bus_name=i2c2
+  bus_freq_hz=400000
+  bus_addr=0x76
++/dev/spxyz00n/1/baro
+  name=SPL07003 Barometer
++/dev/spxyz00n/1/temp
+  name=SPL07003 Temperature
+
++/dev/vd628x/0/rls
+  lux_scale=108.1642

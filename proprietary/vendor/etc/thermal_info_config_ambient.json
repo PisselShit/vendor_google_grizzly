@@ -1,0 +1,32 @@
+{
+    "Sensors":[
+        {
+            "Name": "VIRTUAL-SKIN-AMBIENT-MODEL",
+            "Type": "UNKNOWN",
+            "Version": "v1.0.1",
+            "VirtualSensor": true,
+            "ModelPath": "ambient_estimation_model.tflite",
+            "Formula": "USE_ML_MODEL",
+            "Combination": ["charging_therm", "disp0_therm", "flash_therm", "north_therm", "quiet_therm", "rfpa_therm", "soc_therm", "usb_pwr_therm", "VIRTUAL_WLAN_BT_MMWAVE_AVG", "VSYS_CAMERA", "VSYS_DISPLAY", "VSYS_TSPKR", "VIRTUAL_RFFE_AVG", "VIRTUAL_MODEM_AVG", "VIRTUAL_SOC_POWER"],
+            "CombinationType": ["SENSOR", "SENSOR", "SENSOR", "SENSOR", "SENSOR", "SENSOR", "SENSOR", "SENSOR", "ODPM", "ODPM", "ODPM", "ODPM", "ODPM", "ODPM", "ODPM"],
+            "Multiplier": 0.001,
+            "PreviousSampleCount": 3,
+            "SupportUnderSampling": true,
+            "TimeResolution": 7000
+        },
+        {
+            "Name": "AMBIENT-UPDATER",
+            "Type": "UNKNOWN",
+            "VirtualSensor": true,
+            "Hidden": true,
+            "TriggerSensor": ["north_therm", "quiet_therm", "usb_pwr_therm", "flash_therm"],
+            "Formula": "WEIGHTED_AVG",
+            "Combination": ["VIRTUAL-SKIN-AMBIENT-MODEL"],
+            "Coefficient": [0.0],
+            "Multiplier": 1,
+            "SendPowerHint": true,
+            "PollingDelay": 300000,
+            "PassiveDelay": 7000
+        }
+    ]
+}

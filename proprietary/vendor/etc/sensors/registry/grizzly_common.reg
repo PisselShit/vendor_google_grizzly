@@ -1,0 +1,428 @@
+#
+# Grizzy sensor device configuration registry script.
+#
+# Source of truth: go/pixel-sensor-list
+#
+
+#
+# CDT Filter <CDT>:<mask>
+# CDT format: <0xPPPPSJIV> (P:Product, S:Stage, J:Major, I:Minor, V:Variant)
+# go/pixel-cdt-mbu
+#
+
+?+0x50000:0xFFFF0000
+
+&MandatorySensorList
+# Accel
+1:0
+# Gyro
+2:0
+# Prox
+3:0
+# Baro
+4:0
+# Baro Temp
+5:0
+# Mag
+6:0
+# IMU Temp
+8:0
+# ALS
+9:0
+# Color
+10:0
+# Camera V-Sync
+11:0
+11:1
+11:2
+11:3
+# Binned Brightness
+14:0
+# Window-orientation
+16:0
+# Lift to wake
+17:0
+# Double Twist
+18:0
+# Game Rotation Vector
+# TODO(b/486224221): re-enable motion fusion once performance is unblocked
+# 20:0
+# Geomagnetic Rotation Vector
+# TODO(b/486224221): re-enable motion fusion once performance is unblocked
+# 21:0
+# Gravity
+# TODO(b/486224221): re-enable motion fusion once performance is unblocked
+# 22:0
+# Linear Acceleration
+# TODO(b/486224221): re-enable motion fusion once performance is unblocked
+# 23:0
+# Orientation
+# TODO(b/486224221): re-enable motion fusion once performance is unblocked
+# 24:0
+# Touch
+25:0
+# Rotation Vector
+# TODO(b/486224221): re-enable motion fusion once performance is unblocked
+# 27:0
+# Significant motion
+28:0
+# Step algos
+29:0
+30:0
+# Tilt
+31:0
+# Proximity Gated Touch Long Press
+51:0
+# Counter
+35:0
+35:1
+# Rear Light
+46:0
+# Auto-brightness
+48:0
+
+# DVFS service
++/power/sc/dvfs
+  mips_max_vote=800
+  mips_min_vote=30
+
++/power/a32/dvfs
+  mips_max_vote=384
+  mips_min_vote=0
+
+# ALSP (TMD3743)
++/dev/tmd3743/0
+  bus_name=i2c2
+  bus_freq_hz=400000
+  bus_addr=0x39
+  intr_id=132
+  anti_aliasing=1
+  interlacing=1
+  is_te2_node_enabled=1
+  is_changable_pwm_supported=1
+  # Leakage model type to use to calculate display leakage.
+  #  0 : Compensate Lux using weighted Luma.
+  #  1 : Compensate Lux using legacy plus modified C-channel histogram.
+  #  2 : Compensate calculated XYZ values.
+  #  3 : Compensate CRGBW channels.
+  leakage_model_type=3
+
++/dev/tmd3743/0/prox
+  gain1=64
+  gain2=1
+  prox_delay_min_mode_us=26000
+  pulse_count=2
+  pulse_len_us=64
+  far_threshold=900
+  near_threshold=1500
+  auto_baseline=1
+  min_fps=30
+
++/dev/tmd3743/0/als
+  x_crgbw_coefs=-37.408235 43.854591 129.513772 -9.300066 -2.601188
+  lux_crgbw_coefs=-27.257599 26.672212 124.899590 0.132850 -1.952329
+  z_crgbw_coefs=30.456540 -57.486146 -0.813766 132.762996 1.365894
+  # Display PWM table and dependent parameters.
+  pwm_hz=240 480
+
+  # Lux Filter parameters
+  fast_filter_size=10
+  slow_filter_size=100
+  aod_fast_filter_size=3
+  aod_slow_filter_size=3
+
+  # Throttle output rate to 60 Hz.
+  sample_throttle_period_us=16000
+
+  # Alternate Lux equation parameters.
+  # Format:
+  #   per_chan_lux_coefs = <C_coef> <R_coef> <G_coef> <B_coef> <W_coef>
+  #   c_g_ratio_modified_lux = r1 r2 r3 r4
+  #      defined as:
+  #      (C/G < r1) || (r4 < C/G)            =>  W-based  eq.
+  #      (r1 < C/G < r2) || (r3 < C/G < r4)  =>  Weighted average between W-based and default eq.
+  #      r2 < C/G < r3                       =>  Default eq.
+  #
+  # Disabled for now.
+  # per_chan_lux_coefs=30 90 90 90 30
+  # c_g_ratio_modified_lux=2.4 2.8 4.8 5.2
+
+  # Histogram Configuration.
+  histo_enable=1
+  # Display coordinates go from top left to bottom right.
+  histo_roi_left=350
+  histo_roi_top=170
+  histo_roi_right=475
+  histo_roi_bottom=295
+  # The maximum brightness (DBV) value up to which histogram is active.
+  # This value should match one of the itime_table_brightness values.
+  histo_max_brightness=16384
+  # Minimum change needed for a leakage value to be reported, i.e.,
+  # min_change = MAX(min_change_value, current_leakage_val * min_change_rate)
+  histo_min_change_value=0.5
+  histo_min_change_rate=0.01
+  # Histogram polling interval in ms.
+  histo_polling_interval=50
+  # Fallback luma value to use when histogram returns error (e.g., due to DRM).
+  histo_fallback_luma=128.0
+
+  ## Leakage calculator configuration.
+
+  # Histo Luma matrix coefficients.
+  # Format: histo_luma_matrix_<pwm_hz>_<n> = <start_DBV> <end_DBV> <<co-effs of luma-term matrix>>
+  #         where: pwm_hz = PWM frequency; n = Luma matrix count.
+  # The luma-term matrix applies for the given pwm_hz, when "start_DBV <= current_DBV <= end_DBV".
+  histo_luma_matrix_240_0=345 1000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+  histo_luma_matrix_240_1=1001 2918 0.46060098 0.31516745 0.22423157 0.45128745 0.34238286 0.20632969 0.29361359 0.49811475 0.20827166 -4.30747067 0.14866636 5.15880431 0.41937824 0.41152683 0.16909494
+  histo_luma_matrix_240_2=2919 16384 0.41326402 0.4779782 0.10875778 0.58890549 0.35055084 0.06054367 0.08546265 0.8083959 0.10614145 0.0698555 0.53507414 0.39507036 0.46905648 0.42656985 0.10437366
+  histo_luma_matrix_480_0=345 1000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+  histo_luma_matrix_480_1=1001 2918 0.38570168 0.48939505 0.12490328 0.65741176 0.30011737 0.04247087 0.08043832 0.86625148 0.0533102 0.1115493 0.48993061 0.39852009 0.42115657 0.46943616 0.10940727
+  histo_luma_matrix_480_2=2919 16384 0.45908574 0.49157165 0.04934261 0.616911 0.32345589 0.0596331 0.16426004 0.74164859 0.09409138 0.20698833 0.42552438 0.3674873 0.50426712 0.40563954 0.09009334
+
+  # Histo Luma exponent table.
+  # Format: histo_luma_exp = <DBV1 exponent1> <DBV2 exponent2> ... <DBV_n exponent_n>
+  #         where: DBV1 < DBV2 < ... < DBV_n.
+  # For current_DBV, "exponent_x" value from first pair satisfying "current_DBV <= DBV_x" is chosen.
+  histo_luma_exp=16384 1.5
+
+  # Histo DBV equations.
+  # Format: histo_dbv_eq_<pwm_hz>_<channel_index>_<n> = <start_DBV> <end_DBV> <eq_type>
+  #                                                     <<equation co-efficients>>
+  #         where: pwm_hz = PWM freq; channel_index = Leakage channel index enumerated as CRGBW;
+  #                n = DBV equation count.
+  # The DBV-term equation applies for the given pwm_hz, for the given leakage channel,
+  # when "start_DBV <= current_DBV <= end_DBV".
+  histo_dbv_eq_240_0_0=345 1000 0 0
+  histo_dbv_eq_240_0_1=1001 2918 0 -5.045139889160986 0.01861754230317156 -2.4960406884993334e-05 1.5914458248512e-08 -4.8511889465713746e-12 5.695614865613267e-16
+  histo_dbv_eq_240_0_2=2919 16384 0 -1.3091246921546653 0.0010057585708957736 -2.587069464879575e-07 3.276583215509944e-11 -1.957906138178602e-15 4.5549311101099503e-20
+  histo_dbv_eq_240_1_0=345 1000 0 0
+  histo_dbv_eq_240_1_1=1001 2918 0 -4.947459675649438 0.01817115751456547 -2.408901799067603e-05 1.520018420560093e-08 -4.5926270045284656e-12 5.354533660929004e-16
+  histo_dbv_eq_240_1_2=2919 16384 0 -0.7902408284799586 0.0005899017020570015 -1.4145354580764762e-07 1.7265528945081582e-11 -9.830944639890445e-16 2.2075543143795974e-20
+  histo_dbv_eq_240_2_0=345 1000 0 0
+  histo_dbv_eq_240_2_1=1001 2918 0 -5.616311249808961 0.020433072495996855 -2.787147622028349e-05 1.806868822491718e-08 -5.590003237243693e-12 6.64520570415037e-16
+  histo_dbv_eq_240_2_2=2919 16384 0 -2.0919958036487203 0.0015778987647384727 -4.276801180052376e-07 5.6354790051274494e-11 -3.51850275758865e-15 8.503126966041671e-20
+  histo_dbv_eq_240_3_0=345 1000 0 0
+  histo_dbv_eq_240_3_1=1001 2918 0 -6.801643434482225 0.02492011051457679 -3.445974919040332e-05 2.2585498335270394e-08 -7.0486172438353565e-12 8.427235750337112e-16
+  histo_dbv_eq_240_3_2=2919 16384 0 -0.20187033211202252 0.00011150099145934442 -1.3250377767188552e-08 -7.34842852845497e-14 1.7662308147790503e-16 -7.695447080014562e-21
+  histo_dbv_eq_240_4_0=345 1000 0 0
+  histo_dbv_eq_240_4_1=1001 2918 0 -5.321121730574161 0.019566047223094157 -2.623699424864788e-05 1.673352835580203e-08 -5.102954759950346e-12 5.992192047624209e-16
+  histo_dbv_eq_240_4_2=2919 16384 0 -1.3366400139433792 0.0010327328837333063 -2.7145038951655695e-07 3.512915016446003e-11 -2.1451500564800038e-15 5.091212514889847e-20
+
+  histo_dbv_eq_480_0_0=345 1000 0 0
+  histo_dbv_eq_480_0_1=1001 2918 0 -5.247566456511902 0.01904406536395062 -2.5588098458121664e-05 1.6430671707528948e-08 -5.086601158193036e-12 6.102252644879736e-16
+  histo_dbv_eq_480_0_2=2919 16384 0 -0.8622360801798805 0.0006735147968560477 -1.7095585932462752e-07 2.164649396665925e-11 -1.2727442314086339e-15 2.914171442816978e-20
+  histo_dbv_eq_480_1_0=345 1000 0 0
+  histo_dbv_eq_480_1_1=1001 2918 0 -5.31934081392879 0.0192490841459716 -2.5780996599468563e-05 1.6508609467034466e-08 -5.09873178903065e-12 6.104835655146277e-16
+  histo_dbv_eq_480_1_2=2919 16384 0 -0.5361536758002351 0.00040899678536036063 -9.632143576966514e-08 1.1703445260201351e-11 -6.408138789928887e-16 1.375370638323621e-20
+  histo_dbv_eq_480_2_0=345 1000 0 0
+  histo_dbv_eq_480_2_1=1001 2918 0 -5.002517472017351 0.01794352001095142 -2.4026698078786945e-05 1.5426865966861686e-08 -4.790605258908737e-12 5.779219779389584e-16
+  histo_dbv_eq_480_2_2=2919 16384 0 -1.2150128087686163 0.0008917165644976201 -2.300266557803487e-07 2.924980407268074e-11 -1.7379404667917874e-15 4.0129903017703254e-20
+  histo_dbv_eq_480_3_0=345 1000 0 0
+  histo_dbv_eq_480_3_1=1001 2918 0 -5.4580641173986315 0.019919906782769507 -2.747643693556391e-05 1.8091521824598453e-08 -5.713630545747995e-12 6.949689713219407e-16
+  histo_dbv_eq_480_3_2=2919 16384 0 -0.003974778381111928 2.7717794415098692e-05 -1.3650914828413964e-08 3.1703837833070504e-12 -2.232662174936799e-16 6.428431528441616e-21
+  histo_dbv_eq_480_4_0=345 1000 0 0
+  histo_dbv_eq_480_4_1=1001 2918 0 -5.01919884829697 0.01812840881432414 -2.421452006980704e-05 1.5490769578342706e-08 -4.790508551786641e-12 5.754409102660933e-16
+  histo_dbv_eq_480_4_2=2919 16384 0 -0.8151056911053914 0.0006411657379065978 -1.657450203569666e-07 2.151689824479926e-11 -1.3011961917505344e-15 3.073897961087908e-20
+
++/dev/tmd3743/0/color
+  freeze_cct_on_inaccurate_leakage=1
+
++/dev/tmd3743/0/spectral
+  priority=1
+
+# Display Info 0.
++/dev/display_info/0
+  # Link to ALS attached to this display.
+  attached_alsp=/dev/tmd3743/0
+
+# IMU (ICM45631)
++/dev/icm456xy/0
+  bus_name=i3c4
+  bus_freq_hz=400000
+  i3c_freq_hz=12000000
+  bus_addr=0x68
+  i3c_addr=0xa
+  intr_id=133
+  trigger_type=3
+  priority=0
+  who_am_i=0xe8
+  spi_slew_rate_regval=5
+  md_threshold=60
+  md_duration_samples=1
+  sd_threshold=60
+  sd_timeout_ms=5000
+  sd_batching_latency_ms=1000
+  lowG_peak_threshold=848
+  lowG_detect_timeout_ms=20
+  lowG_debounce_timeout_ms=1000
+  orientation_transform=-2 1 3
++/dev/icm456xy/0/accel
+  name=ICM45631 Accelerometer
++/dev/icm456xy/0/gyro
+  name=ICM45631 Gyroscope
++/dev/icm456xy/0/temp
+  name=ICM45631 Temperature
++/dev/icm456xy/0/motion_detect
+  name=ICM45631 Motion Detect
++/dev/icm456xy/0/stationary_detect
+  name=ICM45631 Stationary Detect
++/dev/icm456xy/0/freefall_detect
+  name=ICM45631 FreeFall Detect
+
+# Golden Calibration for IMU
++/golden_cal/dev/icm45631/0/accel
+  fac_cal_transform=0.9971 0.0063 -0.0054 -0.0048 0.9974 0.0007 0.0049 0.0004 0.9983 0.0117 0.0099 0.1077
+  temp=39.1700
+  temp_sensitivity=0.0008 0.0001 -0.0015
+
++/golden_cal/dev/icm45631/0/gyro
+  fac_cal_transform=1.0036 0.0047 -0.0058 -0.0054 1.0028 -0.0010 0.0062 0.0010 0.9980 -0.0009 0.0017 0.0005
+  temp=39.1700
+  temp_sensitivity=0.0000 0.0000 0.0001
+
+# MAG (MMC5616WA)
++/dev/mmc5616/0
+  bus_name=i3c0
+  bus_freq_hz=400000
+  i3c_freq_hz=6250000
+  bus_addr=0x30
+  i3c_addr=0x14
+  priority=0
+  orientation_transform=-2 -1 -3
++/dev/mmc5616/0/mag
+  fac_cal_transform=0.9639 0.0617 0.0110 0.0848 0.9234 0.0276 -0.0047 0.0216 1.090 0 0 0
+
+# MAG CC
++/dev/mag/0
+  curr_comp_factors_fast=7.2 9.2 2.0
+  curr_comp_factors= 7.1 9.2 2.1
+  curr_comp_factors_wireless= -1.8 -1.7 1.3
+  curr_comp_factors_wireless_fast= -1.8 -1.7 1.3
+
+# BARO (SPA18001)
++/dev/spxyz00n/0
+  bus_name=i2c2
+  bus_freq_hz=400000
+  bus_addr=0x77
+  intr_id=136
++/dev/spxyz00n/0/baro
+  name=SPA18001 Barometer
++/dev/spxyz00n/0/temp
+  name=SPA18001 Temperature
+
+# Golden calibration for barometer.
++/golden_cal/dev/spa18001/0/baro
+  fac_cal_transform=1.0 -0.3540
+  temp=28.2928
+  temp_sensitivity=-0.0005
+
+# Color Lights Driver
++/dev/b1010/0
+  # Mapping from logical LED_ID to physical order on the ring.
+  led_map=7 6 5 4 3 2 1 8
+  # Tweak sRGB->PWM processing to force PWM values to zero when their sRGB counterpart is.
+  null-means-null=1
+  # Auto-Brightness control
+  abc_enable=1
+  # Lux-to-Nits map.
+  # Format: <num-of-pairs> <lux0> <nits0> <lux1> <nit1> ..
+  abc_map_lux2nits=11 10 150 50 250 100 400 200 720 500 1500 1000 4200 1500 5760 2500 7440 5000 10560 10000 14000 50000 33600
+  # Hysteresis window. Lux values have to go above (brightening) or below (darkening) the
+  # thresholds for a brightness change to happen.
+  # brightening_lux_thresh = MAX(last_lux + brighten_lux_val, lux * (1.0 + brighten_lux_pct))
+  #   abc_hyst_brighten_lux_val, abc_hyst_brighten_lux_pct
+  # darkening_lux_thresh = MIN(last_lux - darken_lux_val, last_lux * (1.0 - darken_lux_pct))
+  #   abc_hyst_darken_lux_val, abc_hyst_darken_lux_pct
+  # Debounce time before changing brightness.
+  abc_debounce_brighten_ms=1000
+  abc_debounce_darken_ms=1000
+  # Brightness changing ramp configuration.
+  #   abc_ramp_brighten_rate_nits_per_sec, abc_ramp_brighten_max_time_sec
+  #   abc_ramp_darken_rate_nits_per_sec, abc_ramp_darken_max_time_sec
+
+# Camera V-Sync
++/dev/camera_vsync/0 # RUWCAM2AP_VSYNC
+  intr_id=122
+  intr_trigger_type=2
++/dev/camera_vsync/1 # RCAM2AP_VSYNC
+  intr_id=123
+  intr_trigger_type=2
++/dev/camera_vsync/2 # FCAM0_2_AP_VSYNC
+  intr_id=124
+  intr_trigger_type=2
++/dev/camera_vsync/3 # RTCAM2AP_VSYNC
+  intr_id=127
+  intr_trigger_type=2
+
+# RAINBOW (VD6283TG)
++/dev/vd628x/0
+  bus_name=i2c2
+  bus_freq_hz=400000
+  bus_addr=0x20
+  pdm_id=4
+  pcm_rate_hz=16000
+  pdm_24b_samples=0
+
++/dev/vd628x/0/spectral
+  auto_gain=1
+  priority=0
+  # Outgoing sample values follow the same order as HW.
+  passthrough_channel_order=1
+  # On-change thresholds for each color channel c: min_delta[c] ratio[c].
+  # A value of -1 disables a threshold.
+  # Change events are determined as follows:
+  #  last_count[c]: the last sample count for each channel c
+  #  count[c]: the current sample count for each channel c
+  #   => delta[c] = abs(last_count[c] - count[c])
+  #  thresh[c] = max(min_delta[c], last_count[c] * ratio[c])
+  #  if delta[c] > thresh[c] for any channel c:
+  #    Send a new sample with all current channel counts
+  r_change_thresh=-1 -1
+  g_change_thresh=100 0.1
+  b_change_thresh=-1 -1
+  c1_change_thresh=100 0.1
+  c2_change_thresh=-1 -1
+  ir_change_thresh=-1 -1
+
++/dev/vd628x/0/rls
+  fix_fac_cal=1
+
++/dev/vd628x/0/flicker
+  auto_gain=1
+  # Flicker capture modes:
+  #  0: Normal (on-chip flicker processing, PDM converting to PCM).
+  #  1: Direct1 (on-chip direct passthrough, PDM bypass, driver PCM converting).
+  #  2: Direct2 (on-chip direct passthrough, PDM converting to PCM)
+  flicker_mode=2
+  # The PDM clock in kHz
+  pdm_clock_khz=3200
+  # Upshift the sample to compensate for the -6dB stage in the PDM interface.
+  sample_upshift=1
+
++/dev/auto_brightness/0
+
+# TOUCH
++/dev/s39xx/0
+  bus_name=spi3
+  bus_freq_hz=10000000
+  spi_mode=0
+  spi_word_size=8
+  manual_cs_mode=1
+  cs_clock_delay_us=10
+  intr_id=141
+  intr_type=2
+  invalid_gesture_enabled=0
++/touch/prox_gated_sensor
+  single_tap_instance=0
+  long_press_instance=0
+
+# TBN
++/tbn
+  tbn_mode=2
+  device_count=1
+
+# Binned Brightness
++/dev/binned_brightness/0
+  # ALS sensor to use as input. This is matched to the ALS priority value.
+  als_instance=0
+  panel_id=0
