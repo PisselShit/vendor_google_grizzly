@@ -637,7 +637,6 @@ PRODUCT_COPY_FILES += \
     vendor/google/grizzly/proprietary/product/etc/permissions/androidx.camera.extensions.impl.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/androidx.camera.extensions.impl.xml \
     vendor/google/grizzly/proprietary/product/etc/permissions/com.google.android.apps.stargate.support.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/com.google.android.apps.stargate.support.xml \
     vendor/google/grizzly/proprietary/product/etc/permissions/com.google.android.apps.stargate.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/com.google.android.apps.stargate.xml \
-    vendor/google/grizzly/proprietary/product/etc/permissions/com.google.android.dialer.support.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/com.google.android.dialer.support.xml \
     vendor/google/grizzly/proprietary/product/etc/permissions/com.google.pixel.camera.connectivity.impl.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/com.google.pixel.camera.connectivity.impl.xml \
     vendor/google/grizzly/proprietary/product/etc/permissions/com.google.pixel.camera.services.cameraidremapper.impl.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/com.google.pixel.camera.services.cameraidremapper.impl.xml \
     vendor/google/grizzly/proprietary/product/etc/permissions/com.google.pixel.camera.services.lyricconfigprovider.impl.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/com.google.pixel.camera.services.lyricconfigprovider.impl.xml \
@@ -720,7 +719,6 @@ PRODUCT_PACKAGES += \
     libmtkrillog \
     libpixeldisplaymanager_jni \
     libpixelimsmedia \
-    libpowerstatshaldataprovider \
     libtrm \
     vendor.google.whitechapel.audio.audioext@4.0 \
     vendor.google.whitechapel.audio.extension-V8-ndk \
@@ -745,7 +743,6 @@ PRODUCT_PACKAGES += \
     VendorImplSatelliteService \
     grilservice \
     ril-extension \
-    com.google.android.dialer.support \
     RadioConfigLib \
     com.android.hotwordenrollment.common.util \
     com.google.android.camera.extensions \
